@@ -8,12 +8,29 @@ import {
 } from 'react-native-health-connect';
 import { TimeRangeFilter } from 'react-native-health-connect/lib/typescript/types/base.types';
 
+import AppleHealthKit, {
+  HealthInputOptions,
+  HealthKitPermissions,
+} from 'react-native-health';
+
+const permissions: HealthKitPermissions = {
+  permissions: {
+    read: [
+      AppleHealthKit.Constants.Permissions.Steps,
+      AppleHealthKit.Constants.Permissions.FlightsClimbed,
+      AppleHealthKit.Constants.Permissions.DistanceWalkingRunning,
+    ],
+    write: [],
+  },
+};
+
 const useHealthData = (date: Date) => {
   const [steps, setSteps] = useState(0);
   const [flights, setFlights] = useState(0);
   const [distance, setDistance] = useState(0);
+  const [hasPermissions, setHasPermission] = useState(false);
 
-  const readSampleData = async () => {
+  const readAndroidData = async () => {
     const isInitialized = await initialize();
     if (!isInitialized) {
       return;
@@ -56,11 +73,67 @@ const useHealthData = (date: Date) => {
     // console.log(floorsClimbed);
   };
 
-  useEffect(() => {
-    if (Platform.OS !== 'android') {
-      return;
+  const readIOSData = async () => {
+    AppleHealthKit.isAvailable((err, isAvailable) => {
+      if (err) {
+        console.log('Error checking availability');
+        return;
+      }
+      if (!isAvailable) {
+        console.log('Apple Health not available');
+        return;
+      }
+      AppleHealthKit.initHealthKit(permissions, (err) => {
+        if (err) {
+          console.log('Error getting permissions');
+          return;
+        }
+        setHasPermission(true);
+      });
+    });
+
+    if (hasPermissions) {
+      const options: HealthInputOptions = {
+        date: date.toISOString(),
+        includeManuallyAdded: false,
+      };
+  
+      AppleHealthKit.getStepCount(options, (err, results) => {
+        if (err) {
+          console.log('Error getting the steps');
+          return;
+        }
+        setSteps(results.value);
+      });
+  
+      AppleHealthKit.getFlightsClimbed(options, (err, results) => {
+        if (err) {
+          console.log('Error getting the steps:', err);
+          return;
+        }
+        setFlights(results.value);
+      });
+  
+      AppleHealthKit.getDistanceWalkingRunning(options, (err, results) => {
+        if (err) {
+          console.log('Error getting the steps:', err);
+          return;
+        }
+        setDistance(results.value);
+      });
     }
-    readSampleData();
+    return;
+  };
+
+  useEffect(() => {
+    if (Platform.OS == 'android') {
+      readAndroidData();
+    }
+    else if (Platform.OS == 'ios') {
+      readIOSData();
+    }
+    return;
+    
   }, [date]);
 
   return {

@@ -10,7 +10,7 @@ export default function Home() {
     const [date, setDate] = useState(new Date());
   const { steps, flights, distance } = useHealthData(date);
 
-  const changeDate = (numDays) => {
+  const changeDate = (numDays: number) => {
     const currentDate = new Date(date); // Create a copy of the current date
     // Update the date by adding/subtracting the number of days
     currentDate.setDate(currentDate.getDate() + numDays);
