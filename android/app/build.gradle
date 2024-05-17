@@ -113,9 +113,9 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace 'com.vadinsavin.StepCounter'
+    namespace 'com.mastnfranc.fitSteps'
     defaultConfig {
-        applicationId 'com.vadinsavin.StepCounter'
+        applicationId 'com.mastnfranc.fitSteps'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

@@ -3,17 +3,18 @@ import { View, Text, Button, StyleSheet, Alert } from 'react-native';
 import LogoutButton from './components/LogoutButton';
 import { UserContext } from './components/userContext';
 import { AntDesign } from '@expo/vector-icons';
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import useHealthData from '../src/hooks/useHealthData';
+import Value from '../src/components/Value';
 
 function HomeScreen({ navigation }) {
     const userContext = useContext(UserContext);
     const [profile, setProfile] = useState({});
     const [movements, setMovements] = useState([]);
     const [date, setDate] = useState(new Date());
+    const { steps, flights, distance, calories } = useHealthData(date);
 
     useEffect(() => {
         getProfile();
-        getMovements(date);
     }, []);
 
     const getProfile = async () => {
@@ -27,20 +28,20 @@ function HomeScreen({ navigation }) {
         }
     };
 
-    const getMovements = async (date) => {
-        try {
-            const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-            const res = await fetch(`http://108.143.161.80:3001/users/movements/${formattedDate}`, {
-                method: "GET",
-                headers: { 'Content-Type': 'application/json' },
-                credentials: "include"
-            });
-            const data = await res.json();
-            setMovements(data);
-        } catch (error) {
-            console.log('Fetch movements error:', error);
-            Alert.alert('Error', 'Unable to fetch movements.');
+    const updateMovement = async () => {
+        const response = await fetch(`http://108.143.161.80:3001/users/movements/${date}`, {
+            method: 'PUT',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ steps, distance, flightsClimbed: flights, calories })
+        });
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Success:', data);
+        } else {
+            console.error('Failed to update movements:', response.statusText);
         }
+        getProfile();
     };
 
     const handleLogout = async () => {
@@ -74,10 +75,10 @@ function HomeScreen({ navigation }) {
 
     currentDate.setDate(currentDate.getDate() + numDays);
 
-    if (currentDate < new Date(profile.dateOfCreating) || currentDate > new Date()) return;
+    if (currentDate < new Date(profile.dateOfCreating) || currentDate > new Date(new Date().setDate(new Date().getDate() + 1))) return;
 
     setDate(currentDate);
-    getMovements(currentDate);
+    updateMovement();
   };
 
     return (
@@ -100,11 +101,13 @@ function HomeScreen({ navigation }) {
               />
             </View>
 
-            <Text>Points: {profile.points}</Text>
-            <Text>Steps: {movements.steps}</Text>
-            <Text>Distance: {movements.distance}</Text>
-            <Text>Date: {date.toISOString().split('T')[0]}</Text>
-            <Text>Calories: {movements.calories}</Text>
+            <View>
+                <Value label="Points" value={profile.points} />
+                <Value label="Steps" value={steps.toString()} />
+                <Value label="Distance" value={`${(distance / 1000).toFixed(2)} km`} />
+                <Value label="Flights Climbed" value={flights.toString()} />
+                <Value label="Calories Burned" value={calories.toFixed(0)} />
+            </View>
             <LogoutButton onLogout={() => {
                 navigation.replace('Logout');
             }} />
