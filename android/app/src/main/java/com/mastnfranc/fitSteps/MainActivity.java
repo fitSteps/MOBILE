@@ -1,4 +1,4 @@
-package com.vadinsavin.StepCounter;
+package com.mastnfranc.fitSteps;
 
 import android.os.Build;
 import android.os.Bundle;

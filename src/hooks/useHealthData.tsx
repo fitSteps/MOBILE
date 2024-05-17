@@ -28,6 +28,7 @@ const useHealthData = (date: Date) => {
   const [steps, setSteps] = useState(0);
   const [flights, setFlights] = useState(0);
   const [distance, setDistance] = useState(0);
+  const [calories, setCalories] = useState(0);
   const [hasPermissions, setHasPermission] = useState(false);
 
   const readAndroidData = async () => {
@@ -41,6 +42,7 @@ const useHealthData = (date: Date) => {
       { accessType: 'read', recordType: 'Steps' },
       { accessType: 'read', recordType: 'Distance' },
       { accessType: 'read', recordType: 'FloorsClimbed' },
+      { accessType: 'read', recordType: 'TotalCaloriesBurned' },
     ]);
 
     const timeRangeFilter: TimeRangeFilter = {
@@ -71,6 +73,14 @@ const useHealthData = (date: Date) => {
     const totalFloors = floorsClimbed.reduce((sum, cur) => sum + cur.floors, 0);
     setFlights(totalFloors);
     // console.log(floorsClimbed);
+
+    // Calories
+    const calories = await readRecords('TotalCaloriesBurned', {
+      timeRangeFilter,
+    });
+    const totalCalories = calories.reduce((sum, cur) => sum + cur.energy.inKilocalories, 0);
+    setCalories(totalCalories);
+    //console.log(totalCalories);
   };
 
   const readIOSData = async () => {
@@ -140,6 +150,7 @@ const useHealthData = (date: Date) => {
     steps,
     flights,
     distance,
+    calories,
   };
 };
 
