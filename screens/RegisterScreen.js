@@ -1,28 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
+import createClient, { connectClient, publishMessage } from '../mqttClient';
 
 function RegisterScreen({ navigation }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
-    const [height, setHeight] = useState('');
-    const [weight, setWeight] = useState('');
-    const [error, setError] = useState('');
+    const client = createClient();
 
-    async function handleRegister() {
-        // API call logic here
-        const success = true; // Dummy success response
-        if (success) {
-            navigation.navigate('Login');
-        } else {
-            setUsername("");
-            setPassword("");
-            setEmail("");
-            setHeight("");
-            setWeight("");
-            setError("Registration failed");
-        }
-    }
+    useEffect(() => {
+        connectClient(client,
+            () => {
+                console.log('Connected to broker');
+            },
+            (error) => {
+                console.error('Connection failed:', error);
+            }
+        );
+
+        return () => {
+            client.disconnect();
+        };
+    }, []);
+
+    const handleRegister = () => {
+        publishMessage(client, 'register/request', JSON.stringify({
+            username, password, email
+        }));
+        // Navigate on successful registration, consider MQTT response
+        navigation.navigate('Login');
+    };
 
     return (
         <View style={styles.container}>
@@ -45,22 +52,7 @@ function RegisterScreen({ navigation }) {
                 onChangeText={setPassword}
                 secureTextEntry
             />
-            <TextInput
-                style={styles.input}
-                placeholder="Height"
-                value={height}
-                onChangeText={setHeight}
-                keyboardType="numeric"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Weight"
-                value={weight}
-                onChangeText={setWeight}
-                keyboardType="numeric"
-            />
             <Button title="Register" onPress={handleRegister} />
-            {error ? <Text style={styles.error}>{error}</Text> : null}
         </View>
     );
 }
@@ -77,10 +69,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         marginBottom: 10,
         paddingHorizontal: 10,
-    },
-    error: {
-        color: 'red',
-        marginTop: 10,
     }
 });
 
