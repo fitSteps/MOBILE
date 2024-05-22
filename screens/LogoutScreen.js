@@ -1,37 +1,28 @@
 import React, { useContext, useEffect } from 'react';
+import { UserContext } from './components/userContext'; // Adjust the import path as necessary
 import { View, Text, Button } from 'react-native';
-import { UserContext } from './components/userContext';
-import createClient, { connectClient, publishMessage } from '../mqttClient';
 
 function LogoutScreen({ navigation }) {
     const userContext = useContext(UserContext);
-    const client = createClient();
-
+    
     useEffect(() => {
-        connectClient(client, 
-            () => {
-                console.log('Connected to broker');
-            },
-            (error) => {
-                console.error('Connection failed:', error);
+        const logout = async function() {
+            try {
+                // Optionally handle the server-side logout
+                const res = await fetch("http://108.143.161.80:3001/users/logout");
+                userContext.setUserContext(null);  // Assuming setUserContext sets the user state to null
+                navigation.replace('Login');
+            } catch (error) {
+                console.error('Logout failed', error);
             }
-        );
-
-        return () => {
-            client.disconnect();
         };
+        logout();
     }, []);
 
-    const handleLogout = () => {
-        publishMessage(client, 'logout/request', '{}');
-        userContext.setUserContext(null);
-        navigation.replace('Login');
-    };
-
+    // Optionally provide a fallback UI
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <Text>Logging out...</Text>
-            <Button title="Logout" onPress={handleLogout} />
         </View>
     );
 }

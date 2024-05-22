@@ -1,18 +1,7 @@
-import init from 'react_native_mqtt';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import init from 'react_native_mqtt';
 
-init({
-  size: 10000,
-  storageBackend: AsyncStorage,
-  defaultExpires: 1000 * 3600 * 24,
-  enableCache: true,
-  reconnect: true,
-  sync: {},
-});
-
-// Your MQTT client setup continues...
-
-
+// Initialize with AsyncStorage to prevent data loss warnings
 init({
   size: 10000,
   storageBackend: AsyncStorage,
@@ -23,7 +12,7 @@ init({
 });
 
 const createClient = () => {
-  const client = new Paho.MQTT.Client('broker.hivemq.com', 8000, 'clientId');
+  const client = new Paho.MQTT.Client('108.143.161.80', 1883, 'clientId');
 
   client.onConnectionLost = responseObject => {
     if (responseObject.errorCode !== 0) {
@@ -35,35 +24,32 @@ const createClient = () => {
     console.log('New message:', message.payloadString);
   };
 
-  return client;
-};
-
-export const connectClient = (client, onSuccess, onFailure) => {
   client.connect({
-    onSuccess,
-    onFailure,
-    useSSL: false,
+    onSuccess: () => {
+      console.log('Connection successful');
+      // Ensure subscription and publishing are done here or after this point
+      client.subscribe('yourTopic');
+      publishMessage(client);
+    },
+    onFailure: (error) => {
+      console.error('Connection failed:', error);
+    },
+    useSSL: false, // Use true if your broker is set up for SSL/TLS
     userName: 'username',
     password: 'password',
   });
+
+  return client;
 };
 
-export const disconnectClient = (client) => {
+function publishMessage(client) {
   if (client.isConnected()) {
-    client.disconnect();
+    const message = new Paho.MQTT.Message("Hello MQTT");
+    message.destinationName = "yourTopic";
+    client.send(message);
+  } else {
+    console.log('Client is not connected, cannot publish.');
   }
-};
-
-export const subscribeToTopic = (client, topic) => {
-  if (client.isConnected()) {
-    client.subscribe(topic);
-  }
-};
-
-export const publishMessage = (client, topic, message) => {
-  const mqttMessage = new Paho.MQTT.Message(message);
-  mqttMessage.destinationName = topic;
-  client.send(mqttMessage);
-};
+}
 
 export default createClient;
