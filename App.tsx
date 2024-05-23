@@ -5,19 +5,26 @@ import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import LogoutScreen from './screens/LogoutScreen';
 import { NavigationContainer } from '@react-navigation/native';
+import SubscriberScreen from './screens/SubscriberScreen';
+
+// Import MQTT client setup
+import { MQTTProvider } from './mqttProvider'; // Assuming you wrap the MQTT client in a context provider
 
 const Stack = createNativeStackNavigator();
 
 function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Register" component={RegisterScreen} />
-        <Stack.Screen name="Logout" component={LogoutScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <MQTTProvider>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="Subscriber">
+          <Stack.Screen name="Subscriber" component={SubscriberScreen} />
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="Logout" component={LogoutScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </MQTTProvider>
   );
 }
 

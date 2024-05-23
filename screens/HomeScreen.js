@@ -19,7 +19,7 @@ function HomeScreen({ navigation }) {
 
     const getProfile = async () => {
         try {
-            const res = await fetch("http://108.143.161.80:3001/users/profile", { credentials: "include" });
+            const res = await fetch("http://172.201.117.179:3001/users/profile", { credentials: "include" });
             const data = await res.json();
             setProfile(data);
         } catch (error) {
@@ -29,7 +29,7 @@ function HomeScreen({ navigation }) {
     };
 
     const updateMovement = async () => {
-        const response = await fetch(`http://108.143.161.80:3001/users/movements/${date}`, {
+        const response = await fetch(`http://172.201.117.179:3001/users/movements/${date}`, {
             method: 'PUT',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
@@ -47,7 +47,7 @@ function HomeScreen({ navigation }) {
     const handleLogout = async () => {
       try {
           // Call the logout endpoint on your server
-          const response = await fetch("http://108.143.161.80:3001/users/logout", {
+          const response = await fetch("http://172.201.117.179:3001/users/logout", {
               method: 'POST',  // or 'GET', depending on your server setup
           });
           if (response.ok) {
