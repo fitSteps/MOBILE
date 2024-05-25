@@ -10,9 +10,20 @@ function RegisterScreen({ navigation }) {
     const [error, setError] = useState('');
 
     async function handleRegister() {
-        // API call logic here
-        const success = true; // Dummy success response
-        if (success) {
+        const res = await fetch("http://172.201.117.179:3001/users", {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: email,
+                username: username,
+                password: password,
+                height: height,
+                weight: weight
+            })
+        });
+        const data = await res.json();
+        if (data._id !== undefined) {
             navigation.navigate('Login');
         } else {
             setUsername("");

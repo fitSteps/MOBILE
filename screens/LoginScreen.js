@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import { UserContext } from './components/userContext'; // Adjust the import based on where you place the context
 
 function LoginScreen({ navigation }) {
@@ -22,7 +22,7 @@ function LoginScreen({ navigation }) {
         const data = await res.json();
         if(data._id !== undefined){
             userContext.setUserContext(data);
-            navigation.replace('Home');
+            navigation.replace('Main');
         } else {
             setUsername("");
             setPassword("");
@@ -48,6 +48,11 @@ function LoginScreen({ navigation }) {
             />
             <Button title="Log in" onPress={handleLogin} />
             {error ? <Text style={styles.error}>{error}</Text> : null}
+            <View style={styles.registerContainer}>
+                <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                    <Text style={styles.registerButton}>Don't have an account yet? </Text>
+                </TouchableOpacity>
+            </View>
         </View>
     );
 }
@@ -68,6 +73,18 @@ const styles = StyleSheet.create({
     error: {
         color: 'red',
         marginTop: 10,
+    },
+    registerContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginTop: 10,
+    },
+    registerText: {
+        fontSize: 14,
+    },
+    registerButton: {
+        fontSize: 14,
+        color: 'blue',
     }
 });
 
