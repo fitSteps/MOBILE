@@ -22,6 +22,7 @@ function LoginScreen({ navigation }) {
         const data = await res.json();
         if(data._id !== undefined){
             userContext.setUserContext(data);
+            console.log(data);
             navigation.replace('Main');
         } else {
             setUsername("");
