@@ -1,48 +1,49 @@
-import { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Client } from 'paho-mqtt';
+import { MQTTContext } from '../mqttProvider';  // Import the context
+import { UserContext } from './components/userContext';
 
 const SubscriberScreen = () => {
   const [message, setMessage] = useState('');
+  const { client } = useContext(MQTTContext);  
+  const userContext = useContext(UserContext);
+  const [uuid, setUUID] = useState({});
 
   useEffect(() => {
-    // Initialize the client correctly with a string URI and client ID.
-    const client = new Client('ws://172.201.117.179:9001/mqtt', 'clientId');
-
-    client.onFailure = (error) => {
-      console.error('Connection failed with detailed error:', error);
-    };
-  
-
-    client.onMessageArrived = (msg) => {
-      console.log('New message:', msg.payloadString);
-      setMessage(msg.payloadString);
-    };
-
-    client.onConnectionLost = responseObject => {
-      if (responseObject.errorCode !== 0) {
-        console.log('Connection lost:', responseObject.errorMessage);
+    const getUUID = async () => {
+      try {
+        const res = await fetch("http://172.201.117.179:3001/users/profile", { credentials: "include" });
+        const data = await res.json();
+        setUUID(data.phoneUUID);  // Save the UUID in state
+      } catch (error) {
+        console.log('Fetch profile error:', error);
+        Alert.alert('Error', 'Unable to fetch profile.');
       }
     };
 
-    client.connect({
-      onSuccess: () => {
-        console.log('Connection successful');
-        client.subscribe('test/topic');
-      },
-      onFailure: (error) => {
-        console.error('Connection failed with error:', error);
-      },
-      useSSL: false, // true if using 'wss://'
-      mqttVersion: 4,
-    });
+    getUUID();
+  }, []); 
 
-    return () => {
-      if (client.isConnected()) {
-        client.disconnect();
-      }
-    };
-  }, []);
+  useEffect(() => {
+    if (client && uuid) {
+      const topic = `topic/${uuid}`;  // Create a topic string using the UUID
+      client.onMessageArrived = (msg) => {
+        console.log('New message:', msg.payloadString);
+        setMessage(msg.payloadString);  // Update the local state with the received message
+      };
+
+      // Subscribe to the topic specific to the UUID
+      client.subscribe(topic, {
+        onSuccess: () => console.log(`Subscribed to ${topic}!`)
+      });
+
+      return () => {
+        if (client.isConnected()) {
+          client.unsubscribe(topic);
+        }
+      };
+    }
+  }, [client, uuid]);  // This effect runs when either client or uuid changes
 
   return (
     <View style={styles.container}>

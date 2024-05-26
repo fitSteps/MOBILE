@@ -5,6 +5,7 @@ import { UserContext } from './components/userContext';
 import { AntDesign } from '@expo/vector-icons';
 import useHealthData from '../src/hooks/useHealthData';
 import Value from '../src/components/Value';
+import DeviceInfo from 'react-native-device-info';
 
 function HomeScreen({ navigation }) {
     const userContext = useContext(UserContext);
@@ -25,6 +26,29 @@ function HomeScreen({ navigation }) {
         } catch (error) {
             console.log('Fetch profile error:', error);
             Alert.alert('Error', 'Unable to fetch profile.');
+        }
+    };
+
+    const sendUUIDToServer = async () => {
+        const uuid = await DeviceInfo.getUniqueId();
+        console.log('UUID:', uuid);
+        try {
+            const response = await fetch(`http://172.201.117.179:3001/users`, {
+                method: 'PUT',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phoneUUID: uuid })
+            });
+            if (response.ok) {
+                const updatedUser = await response.json();
+                setProfile(updatedUser);
+                Alert.alert("Update Successful", "Your device ID has been updated.");
+            } else {
+                throw new Error('Failed to update UUID on server');
+            }
+        } catch (error) {
+            console.error('Error updating UUID:', error);
+            Alert.alert("Update Failed", "Could not update your device ID on the server.");
         }
     };
 
@@ -108,6 +132,7 @@ function HomeScreen({ navigation }) {
                 <Value label="Flights Climbed" value={flights.toString()} />
                 <Value label="Calories Burned" value={calories.toFixed(0)} />
             </View>
+            <Button title="Update UUID" onPress={sendUUIDToServer} />
             <LogoutButton onLogout={() => {
                 navigation.replace('Logout');
             }} />

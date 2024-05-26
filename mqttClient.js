@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import init from 'react_native_mqtt';
+import {Client} from 'paho-mqtt';
 
 // Initialize with AsyncStorage to prevent data loss warnings
 init({
@@ -12,44 +13,35 @@ init({
 });
 
 const createClient = () => {
-  const client = new Paho.MQTT.Client('108.143.161.80', 1883, 'clientId');
+  try {
+      const client = new Client('ws://172.201.117.179:9001/mqtt', 'clientId');
 
-  client.onConnectionLost = responseObject => {
-    if (responseObject.errorCode !== 0) {
-      console.log('Connection lost:', responseObject.errorMessage);
-    }
-  };
+      client.onConnectionLost = (responseObject) => {
+          if (responseObject.errorCode !== 0) {
+              console.log('Connection lost:', responseObject.errorMessage);
+          }
+      };
 
-  client.onMessageArrived = message => {
-    console.log('New message:', message.payloadString);
-  };
+      client.onMessageArrived = (msg) => {
+          console.log('New message:', msg.payloadString);
+      };
 
-  client.connect({
-    onSuccess: () => {
-      console.log('Connection successful');
-      // Ensure subscription and publishing are done here or after this point
-      client.subscribe('yourTopic');
-      publishMessage(client);
-    },
-    onFailure: (error) => {
-      console.error('Connection failed:', error);
-    },
-    useSSL: false, // Use true if your broker is set up for SSL/TLS
-    userName: 'username',
-    password: 'password',
-  });
+      client.connect({
+          onSuccess: () => {
+              console.log('Connection successful');
+          },
+          onFailure: (error) => {
+              console.error('Connection failed:', error);
+          },
+          useSSL: false,
+          mqttVersion: 4,
+      });
 
-  return client;
+      return client;
+  } catch (error) {
+      console.error('Error setting up the MQTT client:', error);
+  }
 };
 
-function publishMessage(client) {
-  if (client.isConnected()) {
-    const message = new Paho.MQTT.Message("Hello MQTT");
-    message.destinationName = "yourTopic";
-    client.send(message);
-  } else {
-    console.log('Client is not connected, cannot publish.');
-  }
-}
 
 export default createClient;
