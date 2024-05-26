@@ -1,53 +1,80 @@
-import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Client } from 'paho-mqtt';
+import React, { useContext, useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Button, Alert } from 'react-native';
+import { MQTTContext } from '../mqttProvider';
+import { UserContext } from './components/userContext';
+import { Message } from 'paho-mqtt';
 
 const SubscriberScreen = () => {
   const [message, setMessage] = useState('');
+  const { client } = useContext(MQTTContext);  
+  const userContext = useContext(UserContext);
+  const [uuid, setUUID] = useState('');
+  const [showAuthenticateButton, setShowAuthenticateButton] = useState(false);
 
   useEffect(() => {
-    // Initialize the client correctly with a string URI and client ID.
-    const client = new Client('ws://172.201.117.179:9001/mqtt', 'clientId');
-
-    client.onFailure = (error) => {
-      console.error('Connection failed with detailed error:', error);
-    };
-  
-
-    client.onMessageArrived = (msg) => {
-      console.log('New message:', msg.payloadString);
-      setMessage(msg.payloadString);
-    };
-
-    client.onConnectionLost = responseObject => {
-      if (responseObject.errorCode !== 0) {
-        console.log('Connection lost:', responseObject.errorMessage);
+    const getUUID = async () => {
+      try {
+        const res = await fetch("http://172.201.117.179:3001/users/profile", { credentials: "include" });
+        const data = await res.json();
+        setUUID(data.phoneUUID);  // Save the UUID in state
+      } catch (error) {
+        console.log('Fetch profile error:', error);
+        Alert.alert('Error', 'Unable to fetch profile.');
       }
     };
 
-    client.connect({
-      onSuccess: () => {
-        console.log('Connection successful');
-        client.subscribe('test/topic');
-      },
-      onFailure: (error) => {
-        console.error('Connection failed with error:', error);
-      },
-      useSSL: false, // true if using 'wss://'
-      mqttVersion: 4,
-    });
-
-    return () => {
-      if (client.isConnected()) {
-        client.disconnect();
-      }
-    };
+    getUUID();
   }, []);
+
+  useEffect(() => {
+    if (client && uuid) {
+      const topic = `topic/${uuid}`;
+      client.onMessageArrived = (msg) => {
+        console.log('Received msg:', msg.payloadString);
+        setMessage(msg.payloadString);
+        if (msg.payloadString === "authenticate") {
+          setShowAuthenticateButton(true);
+        } else {
+          setShowAuthenticateButton(false);
+        }
+      };
+
+      client.subscribe(topic, {
+        onSuccess: () => console.log(`Subscribed to ${topic}!`)
+      });
+
+      return () => {
+        if (client.isConnected()) {
+          client.unsubscribe(topic);
+        }
+      };
+    }
+  }, [client, uuid]);
+
+  const handleAuthenticate = () => {
+    if (client && client.isConnected()) {
+        const topic = `topic/${uuid}`;  // Ensure the topic is defined based on current UUID
+        const message = 'Authenticated';  // Define the text you want to send
+        
+        client.publish(topic, message, 1, false);
+
+
+    } else {
+        console.log('Client is not connected.');
+        Alert.alert("Connection Error", "Cannot connect to MQTT broker.");
+    }
+};
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>MQTT Subscriber</Text>
-      <Text style={styles.message}>{message || 'No message received yet'}</Text>
+      <Text style={styles.title}>Authenticator</Text>
+      <Text style={styles.message}>{'No message received yet'}</Text>
+      {showAuthenticateButton && (
+        <Button
+          title="Authenticate"
+          onPress={handleAuthenticate}
+        />
+      )}
     </View>
   );
 };
