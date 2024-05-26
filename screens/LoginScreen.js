@@ -1,12 +1,15 @@
 import React, { useContext, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import { UserContext } from './components/userContext'; // Adjust the import based on where you place the context
+import DeviceInfo from 'react-native-device-info';
+
 
 function LoginScreen({ navigation }) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const userContext = useContext(UserContext);
+    const uuid =  DeviceInfo.getUniqueId();
 
     async function handleLogin(e) {
         e.preventDefault();
@@ -16,7 +19,8 @@ function LoginScreen({ navigation }) {
             headers: { 'Content-Type': 'application/json'},
             body: JSON.stringify({
                 username: username,
-                password: password
+                password: password,
+                phoneUUID: uuid
             })
         });
         const data = await res.json();
