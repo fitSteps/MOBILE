@@ -1,13 +1,15 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { MQTTContext } from '../mqttProvider';  // Import the context
+import { View, Text, StyleSheet, Button, Alert } from 'react-native';
+import { MQTTContext } from '../mqttProvider';
 import { UserContext } from './components/userContext';
+import { Message } from 'paho-mqtt';
 
 const SubscriberScreen = () => {
   const [message, setMessage] = useState('');
   const { client } = useContext(MQTTContext);  
   const userContext = useContext(UserContext);
-  const [uuid, setUUID] = useState({});
+  const [uuid, setUUID] = useState('');
+  const [showAuthenticateButton, setShowAuthenticateButton] = useState(false);
 
   useEffect(() => {
     const getUUID = async () => {
@@ -22,17 +24,21 @@ const SubscriberScreen = () => {
     };
 
     getUUID();
-  }, []); 
+  }, []);
 
   useEffect(() => {
     if (client && uuid) {
-      const topic = `topic/${uuid}`;  // Create a topic string using the UUID
+      const topic = `topic/${uuid}`;
       client.onMessageArrived = (msg) => {
-        console.log('New message:', msg.payloadString);
-        setMessage(msg.payloadString);  // Update the local state with the received message
+        console.log('Received msg:', msg.payloadString);
+        setMessage(msg.payloadString);
+        if (msg.payloadString === "authenticate") {
+          setShowAuthenticateButton(true);
+        } else {
+          setShowAuthenticateButton(false);
+        }
       };
 
-      // Subscribe to the topic specific to the UUID
       client.subscribe(topic, {
         onSuccess: () => console.log(`Subscribed to ${topic}!`)
       });
@@ -43,12 +49,32 @@ const SubscriberScreen = () => {
         }
       };
     }
-  }, [client, uuid]);  // This effect runs when either client or uuid changes
+  }, [client, uuid]);
+
+  const handleAuthenticate = () => {
+    if (client && client.isConnected()) {
+        const topic = `topic/${uuid}`;  // Ensure the topic is defined based on current UUID
+        const message = 'Authenticated';  // Define the text you want to send
+        
+        client.publish(topic, message, 1, false);
+
+
+    } else {
+        console.log('Client is not connected.');
+        Alert.alert("Connection Error", "Cannot connect to MQTT broker.");
+    }
+};
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>MQTT Subscriber</Text>
-      <Text style={styles.message}>{message || 'No message received yet'}</Text>
+      <Text style={styles.title}>Authenticator</Text>
+      <Text style={styles.message}>{'No message received yet'}</Text>
+      {showAuthenticateButton && (
+        <Button
+          title="Authenticate"
+          onPress={handleAuthenticate}
+        />
+      )}
     </View>
   );
 };
