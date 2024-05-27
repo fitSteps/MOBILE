@@ -49,10 +49,11 @@ function Friends() {
                 data={friends}
                 renderItem={renderItem}
                 keyExtractor={(item, index) => index.toString()}
-                ListEmptyComponent={<Text>No friends found.</Text>}
+                ListEmptyComponent={() => <Text>You have no friends.</Text>} // Updated to return a component function
             />
         </View>
     );
+    
 }
 
 const styles = StyleSheet.create({
