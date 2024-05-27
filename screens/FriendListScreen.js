@@ -1,17 +1,21 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Button, Modal, TextInput } from 'react-native';
 import { UserContext } from './components/userContext';
 
 function Friends() {
     const [friends, setFriends] = useState([]);
     const { user } = useContext(UserContext);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedFriend, setSelectedFriend] = useState(null);
+    const [goalPoints, setGoalPoints] = useState('');
+    const [dateFrom, setDateFrom] = useState('');
+    const [dateTo, setDateTo] = useState('');
 
     useEffect(() => {
         if (user) {
             fetchFriends();
         }
     }, [user]);
-    
     
     const fetchFriends = async () => {
         console.log("Fetching friends for user:", user);
@@ -33,14 +37,47 @@ function Friends() {
             console.error('Fetch failed:', error);
         }
     };
-    
 
     const renderItem = ({ item }) => (
         <View style={styles.item}>
             <Text style={styles.username}>{item.username}</Text>
             <Text>{item.email}</Text>
+            <Button title="Challenge" onPress={() => {
+                setSelectedFriend(item);
+                setModalVisible(true);
+            }} />
         </View>
     );
+
+    const handleChallengeSubmit = async () => {
+        console.log('Submitting challenge for:', selectedFriend.username, 'with goal points:', goalPoints, 'from:', dateFrom, 'to:', dateTo);
+        
+        try {
+            const response = await fetch('http://172.201.117.179:3001/challenges/addChallengeRequest', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`, // Assuming you handle authentication via tokens
+                },
+                body: JSON.stringify({
+                    challengerId: user._id, // Your user's ID
+                    challengedId: selectedFriend._id, // ID of the friend being challenged
+                    goalPoints,
+                    dateFrom,
+                    dateTo
+                })
+            });
+    
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || "Failed to submit challenge");
+            console.log("Challenge submitted successfully:", data);
+            alert("Challenge submitted successfully!");
+            setModalVisible(false); // Close the modal after submission
+        } catch (error) {
+            console.error('Failed to submit challenge:', error);
+            alert(`Error: ${error.message}`);
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -49,11 +86,44 @@ function Friends() {
                 data={friends}
                 renderItem={renderItem}
                 keyExtractor={(item, index) => index.toString()}
-                ListEmptyComponent={() => <Text>You have no friends.</Text>} // Updated to return a component function
+                ListEmptyComponent={() => <Text>You have no friends.</Text>}
             />
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                    setModalVisible(!modalVisible);
+                }}
+            >
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <TextInput
+                            placeholder="Goal Points"
+                            value={goalPoints}
+                            onChangeText={setGoalPoints}
+                            style={styles.input}
+                            keyboardType="numeric"
+                        />
+                        <TextInput
+                            placeholder="Date From (YYYY-MM-DD)"
+                            value={dateFrom}
+                            onChangeText={setDateFrom}
+                            style={styles.input}
+                        />
+                        <TextInput
+                            placeholder="Date To (YYYY-MM-DD)"
+                            value={dateTo}
+                            onChangeText={setDateTo}
+                            style={styles.input}
+                        />
+                        <Button title="Submit Challenge" onPress={handleChallengeSubmit} />
+                        <Button title="Cancel" onPress={() => setModalVisible(false)} />
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
-    
 }
 
 const styles = StyleSheet.create({
@@ -74,7 +144,35 @@ const styles = StyleSheet.create({
     },
     username: {
         fontSize: 18
-    }
+    },
+    centeredView: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 22,
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: 'white',
+        borderRadius: 20,
+        padding: 35,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+        width: 0,
+        height: 2,
+    },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    input: {
+        width: 200,
+        height: 40,
+        marginBottom: 12,
+        borderWidth: 1,
+        padding: 10,
+    },
 });
 
 export default Friends;
