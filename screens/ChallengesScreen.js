@@ -8,28 +8,53 @@ function ChallengesScreen() {
     const [requests, setRequests] = useState([]);
 
     useEffect(() => {
-        fetchChallenges();
+        fetchChallengesAndRequests();
     }, [user]);
+
+    const fetchChallengesAndRequests = async () => {
+        await fetchChallenges();
+        await fetchRequests();
+    };
 
     const fetchChallenges = async () => {
         try {
-            const response = await fetch(`http://172.201.117.179:3001/users/${user._id}/challenges`, {
+            const response = await fetch(`http://172.201.117.179:3001/users/challenges`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${user.token}`
                 }
             });
+            const data = await response.json();
             if (response.ok) {
-                const data = await response.json();
                 setChallenges(data.challenges);
-                setRequests(data.challenge_requests);
             } else {
-                Alert.alert("Failed to fetch data", "Unable to load challenges and requests.");
+                Alert.alert("Fetch Error", data.message || "Failed to load challenges.");
             }
         } catch (error) {
             console.error('Fetch failed:', error);
-            Alert.alert("Fetch Error", "An error occurred while fetching data.");
+            Alert.alert("Fetch Error", "An error occurred while fetching challenges.");
+        }
+    };
+
+    const fetchRequests = async () => {
+        try {
+            const response = await fetch(`http://172.201.117.179:3001/users/challenge-requests`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                }
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setRequests(data.challenge_requests);
+            } else {
+                Alert.alert("Fetch Error", data.message || "Failed to load challenge requests.");
+            }
+        } catch (error) {
+            console.error('Fetch failed:', error);
+            Alert.alert("Fetch Error", "An error occurred while fetching challenge requests.");
         }
     };
 
@@ -44,7 +69,7 @@ function ChallengesScreen() {
     const renderChallenge = ({ item }) => (
         <View style={styles.item}>
             <Text style={styles.title}>{item.challengeName}</Text>
-            <Text>From: {item.challengerName}</Text>
+            <Text>From: {item.challenger.username}</Text>
             <Text>To: {item.challengedName}</Text>
             <Text>Goal Points: {item.goalPoints}</Text>
         </View>
@@ -53,11 +78,11 @@ function ChallengesScreen() {
     const renderRequest = ({ item }) => (
         <View style={styles.item}>
             <Text style={styles.title}>{item.challengeName}</Text>
-            <Text>From: {item.challengerName}</Text>
+            <Text>From: {item.challenger.username}</Text>
             <Text>Goal Points: {item.goalPoints}</Text>
             <View style={styles.buttons}>
-                <Button title="Accept" onPress={() => handleAccept(item.id)} />
-                <Button title="Reject" onPress={() => handleReject(item.id)} />
+                <Button title="Accept" onPress={() => handleAccept(item._id)} />
+                <Button title="Reject" onPress={() => handleReject(item._id)} />
             </View>
         </View>
     );
@@ -68,13 +93,13 @@ function ChallengesScreen() {
             <FlatList
                 data={challenges}
                 renderItem={renderChallenge}
-                keyExtractor={item => item.id.toString()}
+                keyExtractor={item => item._id.toString()}
             />
             <Text style={styles.header}>Challenge Requests</Text>
             <FlatList
                 data={requests}
                 renderItem={renderRequest}
-                keyExtractor={item => item.id.toString()}
+                keyExtractor={item => item._id.toString()}
             />
         </View>
     );
