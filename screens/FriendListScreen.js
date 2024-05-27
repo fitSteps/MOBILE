@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, StyleSheet, FlatList, Button, Modal, TextInput } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { UserContext } from './components/userContext';
 
 function Friends() {
@@ -8,8 +9,8 @@ function Friends() {
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedFriend, setSelectedFriend] = useState(null);
     const [goalPoints, setGoalPoints] = useState('');
-    const [dateFrom, setDateFrom] = useState('');
-    const [dateTo, setDateTo] = useState('');
+    const [dateFrom, setDateFrom] = useState(new Date());
+    const [showDatePickerFrom, setShowDatePickerFrom] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -27,9 +28,16 @@ function Friends() {
             });
             console.log("Response:", response);
             if (response.ok) {
-                const data = await response.json();
-                console.log("Data received:", data);
-                setFriends(data);
+                const friends = await response.json();
+                const updatedFriends = friends.map(friend => {
+                    const isChallenged = friend.challenges.some(challenge => 
+                        challenge.challenger === user._id || challenge.challenged === user._id);
+                    const hasChallengeRequest = friend.challenge_requests.some(request => 
+                        request.challenger === user._id || request.challenged === user._id);
+                    return { ...friend, isChallenged, hasChallengeRequest };
+                });
+                console.log("Data received:", updatedFriends);
+                setFriends(updatedFriends);
             } else {
                 console.error('Failed to fetch friends:', response.statusText);
             }
@@ -37,45 +45,54 @@ function Friends() {
             console.error('Fetch failed:', error);
         }
     };
-
+    
     const renderItem = ({ item }) => (
         <View style={styles.item}>
             <Text style={styles.username}>{item.username}</Text>
             <Text>{item.email}</Text>
-            <Button title="Challenge" onPress={() => {
-                setSelectedFriend(item);
-                setModalVisible(true);
-            }} />
+            {!item.isChallenged && !item.hasChallengeRequest && (
+                <Button title="Challenge" onPress={() => {
+                    setSelectedFriend(item);
+                    setModalVisible(true);
+                }} />
+            )}
         </View>
     );
 
     const handleChallengeSubmit = async () => {
-        console.log('Submitting challenge for:', selectedFriend.username, 'with goal points:', goalPoints, 'from:', dateFrom, 'to:', dateTo);
-        
+        const submitData = {
+            challengerId: user._id,
+            challengedId: selectedFriend._id,
+            goalPoints,
+            dateFrom: dateFrom.toISOString(),
+        };
+    
+        console.log('Submitting challenge for:', selectedFriend.username, 'with data:', submitData);
+    
         try {
-            const response = await fetch('http://172.201.117.179:3001/challenges/addChallengeRequest', {
+            const response = await fetch('http://172.201.117.179:3001/challenges/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${user.token}`, // Assuming you handle authentication via tokens
+                    'Authorization': `Bearer ${user.token}`,
                 },
-                body: JSON.stringify({
-                    challengerId: user._id, // Your user's ID
-                    challengedId: selectedFriend._id, // ID of the friend being challenged
-                    goalPoints,
-                    dateFrom,
-                    dateTo
-                })
+                body: JSON.stringify(submitData)
             });
     
+            console.log("Response status:", response.status);
             const data = await response.json();
-            if (!response.ok) throw new Error(data.message || "Failed to submit challenge");
+            console.log("Server response:", data);
+    
+            if (!response.ok) {
+                throw new Error(data.message || "Failed to submit challenge due to server error");
+            }
+    
             console.log("Challenge submitted successfully:", data);
             alert("Challenge submitted successfully!");
-            setModalVisible(false); // Close the modal after submission
+            setModalVisible(false);
         } catch (error) {
             console.error('Failed to submit challenge:', error);
-            alert(`Error: ${error.message}`);
+            alert(`Error: ${error.message || error}`);
         }
     };
 
@@ -104,18 +121,6 @@ function Friends() {
                             onChangeText={setGoalPoints}
                             style={styles.input}
                             keyboardType="numeric"
-                        />
-                        <TextInput
-                            placeholder="Date From (YYYY-MM-DD)"
-                            value={dateFrom}
-                            onChangeText={setDateFrom}
-                            style={styles.input}
-                        />
-                        <TextInput
-                            placeholder="Date To (YYYY-MM-DD)"
-                            value={dateTo}
-                            onChangeText={setDateTo}
-                            style={styles.input}
                         />
                         <Button title="Submit Challenge" onPress={handleChallengeSubmit} />
                         <Button title="Cancel" onPress={() => setModalVisible(false)} />
@@ -159,9 +164,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: {
-        width: 0,
-        height: 2,
-    },
+            width: 0,
+            height: 2,
+        },
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,

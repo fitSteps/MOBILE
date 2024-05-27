@@ -6,6 +6,7 @@ import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import LogoutScreen from './screens/LogoutScreen';
 import FriendListScreen from './screens/FriendListScreen';
+import ChallengesScreen from './screens/ChallengesScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import SubscriberScreen from './screens/SubscriberScreen';
 import { MQTTProvider } from './mqttProvider'; // Assuming you wrap the MQTT client in a context provider
@@ -21,6 +22,7 @@ function MainTabs() {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Subscriber" component={SubscriberScreen} />
       <Tab.Screen name="Friends" component={FriendListScreen} />
+      <Tab.Screen name="Challenges" component={ChallengesScreen} />
       <Tab.Screen name="Logout" component={LogoutScreen} />
     </Tab.Navigator>
   );
