@@ -79,22 +79,21 @@ function Friends() {
                 body: JSON.stringify(submitData)
             });
     
-            console.log("Response status:", response.status);
             const data = await response.json();
-            console.log("Server response:", data);
-    
-            if (!response.ok) {
+            if (response.ok) {
+                console.log("Challenge submitted successfully:", data);
+                alert("Challenge submitted successfully!");
+                fetchFriends();  // Refetch friends to update state immediately
+                setModalVisible(false);
+            } else {
                 throw new Error(data.message || "Failed to submit challenge due to server error");
             }
-    
-            console.log("Challenge submitted successfully:", data);
-            alert("Challenge submitted successfully!");
-            setModalVisible(false);
         } catch (error) {
             console.error('Failed to submit challenge:', error);
             alert(`Error: ${error.message || error}`);
         }
     };
+    
 
     return (
         <View style={styles.container}>

@@ -8,22 +8,29 @@ function ChallengesScreen() {
     const [requests, setRequests] = useState([]);
 
     useEffect(() => {
-        fetchChallengesAndRequests();
+        const abortController = new AbortController();
+
+        if (user) {
+            fetchChallengesAndRequests(abortController.signal);
+        }
+
+        return () => abortController.abort(); // Cleanup function that aborts the fetch when the component unmounts
     }, [user]);
 
-    const fetchChallengesAndRequests = async () => {
-        await fetchChallenges();
-        await fetchRequests();
+    const fetchChallengesAndRequests = async (signal) => {
+        await fetchChallenges(signal);
+        await fetchRequests(signal);
     };
 
-    const fetchChallenges = async () => {
+    const fetchChallenges = async (signal) => {
         try {
             const response = await fetch(`http://172.201.117.179:3001/users/challenges`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${user.token}`
-                }
+                },
+                signal: signal
             });
             const data = await response.json();
             if (response.ok) {
@@ -32,19 +39,22 @@ function ChallengesScreen() {
                 Alert.alert("Fetch Error", data.message || "Failed to load challenges.");
             }
         } catch (error) {
-            console.error('Fetch failed:', error);
-            Alert.alert("Fetch Error", "An error occurred while fetching challenges.");
+            if (error.name !== 'AbortError') {
+                console.error('Fetch failed:', error);
+                Alert.alert("Fetch Error", "An error occurred while fetching challenges.");
+            }
         }
     };
 
-    const fetchRequests = async () => {
+    const fetchRequests = async (signal) => {
         try {
             const response = await fetch(`http://172.201.117.179:3001/users/challenge-requests`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${user.token}`
-                }
+                },
+                signal: signal
             });
             const data = await response.json();
             if (response.ok) {
@@ -53,24 +63,64 @@ function ChallengesScreen() {
                 Alert.alert("Fetch Error", data.message || "Failed to load challenge requests.");
             }
         } catch (error) {
-            console.error('Fetch failed:', error);
-            Alert.alert("Fetch Error", "An error occurred while fetching challenge requests.");
+            if (error.name !== 'AbortError') {
+                console.error('Fetch failed:', error);
+                Alert.alert("Fetch Error", "An error occurred while fetching challenge requests.");
+            }
         }
     };
 
-    const handleAccept = async (requestId) => {
-        // Implementation for accepting a challenge
+    const handleAccept = async (challengeId) => {
+        try {
+            const response = await fetch(`http://172.201.117.179:3001/users/accept/${challengeId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                }
+            });
+            const data = await response.json();
+            if (response.ok) {
+                Alert.alert("Challenge Accepted", data.message);
+                fetchChallengesAndRequests(); // Refresh the lists
+            } else {
+                Alert.alert("Error", data.message);
+            }
+        } catch (error) {
+            console.error('Accept failed:', error);
+            Alert.alert("Accept Error", "An error occurred while accepting the challenge.");
+        }
     };
-
-    const handleReject = async (requestId) => {
-        // Implementation for rejecting a challenge
+    
+    const handleReject = async (challengeId) => {
+        try {
+            const response = await fetch(`http://172.201.117.179:3001/users/reject/${challengeId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                }
+            });
+            const data = await response.json();
+            if (response.ok) {
+                Alert.alert("Challenge Rejected", data.message);
+                fetchChallengesAndRequests(); // Refresh the lists
+            } else {
+                Alert.alert("Error", data.message);
+            }
+        } catch (error) {
+            console.error('Reject failed:', error);
+            Alert.alert("Reject Error", "An error occurred while rejecting the challenge.");
+        }
     };
+    
 
     const renderChallenge = ({ item }) => (
         <View style={styles.item}>
             <Text style={styles.title}>{item.challengeName}</Text>
             <Text>From: {item.challenger.username}</Text>
-            <Text>To: {item.challengedName}</Text>
+            <Text>To: {item.challenged.username}</Text>
+            <Text>Ends: {item.dateTo}</Text>
             <Text>Goal Points: {item.goalPoints}</Text>
         </View>
     );
