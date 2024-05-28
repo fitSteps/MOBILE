@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Button, Alert } from 'react-native';
 import { MQTTContext } from '../mqttProvider';
 import { UserContext } from './components/userContext';
 import { Message } from 'paho-mqtt';
+import DeviceInfo from 'react-native-device-info';
 
 const SubscriberScreen = () => {
   const [message, setMessage] = useState('');
@@ -51,6 +52,29 @@ const SubscriberScreen = () => {
     }
   }, [client, uuid]);
 
+  const sendUUIDToServer = async () => {
+    const uuid = await DeviceInfo.getUniqueId();
+    console.log('UUID:', uuid);
+    try {
+        const response = await fetch(`http://172.201.117.179:3001/users`, {
+            method: 'PUT',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phoneUUID: uuid })
+        });
+        if (response.ok) {
+            const updatedUser = await response.json();
+            setProfile(updatedUser);
+            Alert.alert("Update Successful", "Your device ID has been updated.");
+        } else {
+            throw new Error('Failed to update UUID on server');
+        }
+    } catch (error) {
+        console.error('Error updating UUID:', error);
+        Alert.alert("Update Failed", "Could not update your device ID on the server.");
+    }
+};
+
   const handleAuthenticate = () => {
     if (client && client.isConnected()) {
         const topic = `topic/${uuid}`;  // Ensure the topic is defined based on current UUID
@@ -67,8 +91,14 @@ const SubscriberScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Authenticator</Text>
-      <Text style={styles.message}>{'No message received yet'}</Text>
+      {uuid === '' && (
+          <Button title="ENABLE 2FA" onPress={sendUUIDToServer} />
+      )}
+      
+      {uuid !== '' && !showAuthenticateButton && (
+          <Text style={styles.title}>Waiting for requests</Text>
+      )}
+      
       {showAuthenticateButton && (
         <Button
           title="Authenticate"

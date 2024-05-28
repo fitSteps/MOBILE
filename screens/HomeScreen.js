@@ -5,7 +5,7 @@ import { UserContext } from './components/userContext';
 import { AntDesign } from '@expo/vector-icons';
 import useHealthData from '../src/hooks/useHealthData';
 import Value from '../src/components/Value';
-import DeviceInfo from 'react-native-device-info';
+//import DeviceInfo from 'react-native-device-info';
 
 function HomeScreen({ navigation }) {
     const userContext = useContext(UserContext);
@@ -28,7 +28,7 @@ function HomeScreen({ navigation }) {
             Alert.alert('Error', 'Unable to fetch profile.');
         }
     };
-
+    /*
     const sendUUIDToServer = async () => {
         const uuid = await DeviceInfo.getUniqueId();
         console.log('UUID:', uuid);
@@ -50,7 +50,7 @@ function HomeScreen({ navigation }) {
             console.error('Error updating UUID:', error);
             Alert.alert("Update Failed", "Could not update your device ID on the server.");
         }
-    };
+    };*/
 
     const updateMovement = async () => {
         const response = await fetch(`http://172.201.117.179:3001/users/movements/${date}`, {
@@ -132,7 +132,9 @@ function HomeScreen({ navigation }) {
                 <Value label="Flights Climbed" value={flights.toString()} />
                 <Value label="Calories Burned" value={calories.toFixed(0)} />
             </View>
-            <Button title="Update UUID" onPress={sendUUIDToServer} />
+           {
+           //<Button title="Update UUID" onPress={sendUUIDToServer} />
+           }
             <LogoutButton onLogout={() => {
                 navigation.replace('Logout');
             }} />
