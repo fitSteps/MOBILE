@@ -13,7 +13,7 @@ function LoginScreen({ navigation }) {
 
     async function handleLogin(e) {
         e.preventDefault();
-        const res = await fetch("http://172.201.117.179:3001/users/login", {
+        const res = await fetch("http://188.230.209.59:3001/users/login", {
             method: "POST",
             credentials: "include",
             headers: { 'Content-Type': 'application/json'},
@@ -26,7 +26,7 @@ function LoginScreen({ navigation }) {
         const data = await res.json();
         if(data._id !== undefined){
             userContext.setUserContext(data);
-            console.log(data);
+            console.log("dela",data._id);
             navigation.replace('Main');
         } else {
             setUsername("");

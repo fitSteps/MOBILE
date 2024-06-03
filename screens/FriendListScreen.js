@@ -21,7 +21,7 @@ function Friends() {
     const fetchFriends = async () => {
         console.log("Fetching friends for user:", user);
         try {
-            const response = await fetch('http://172.201.117.179:3001/users/friends', {
+            const response = await fetch('http://188.230.209.59:3001/users/friends', {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include'
@@ -70,7 +70,7 @@ function Friends() {
         console.log('Submitting challenge for:', selectedFriend.username, 'with data:', submitData);
     
         try {
-            const response = await fetch('http://172.201.117.179:3001/challenges/add', {
+            const response = await fetch('http://188.230.209.59:3001/challenges/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

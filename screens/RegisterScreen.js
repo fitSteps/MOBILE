@@ -10,7 +10,7 @@ function RegisterScreen({ navigation }) {
     const [error, setError] = useState('');
 
     async function handleRegister() {
-        const res = await fetch("http://172.201.117.179:3001/users", {
+        const res = await fetch("http://188.230.209.59:3001/users", {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
