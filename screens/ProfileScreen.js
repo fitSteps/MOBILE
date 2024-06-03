@@ -4,6 +4,8 @@ import { RNCamera } from 'react-native-camera';
 import Video from 'react-native-video'; // Make sure to have react-native-video installed
 import Value from '../src/components/Value';
 import DeviceInfo from 'react-native-device-info';
+import { UserContext } from './components/userContext';
+
 
 function ProfileScreen() {
     const [profile, setProfile] = useState({});
@@ -19,7 +21,7 @@ function ProfileScreen() {
 
     const getProfile = async () => {
         try {
-            const res = await fetch("http://172.201.117.179:3001/users/profile", {
+            const res = await fetch("http://188.230.209.59:3001/users/profile", {
                 credentials: "include"
             });
             const data = await res.json();
@@ -65,7 +67,7 @@ function ProfileScreen() {
         });
 
         try {
-            const response = await fetch("http://172.201.117.179:3001/users/uploadVideo", {
+            const response = await fetch("http://188.230.209.59:3001/users/uploadVideo", {
                 method: "POST",
                 body: formData,
                 headers: {
@@ -92,7 +94,7 @@ function ProfileScreen() {
         console.log('Sending UUID:', uuid);
         console.log('UUID:', uuid);
         try {
-            const response = await fetch(`http://172.201.117.179:3001/users`, {
+            const response = await fetch(`http://188.230.209.59:3001/users`, {
                 method: 'PUT',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },

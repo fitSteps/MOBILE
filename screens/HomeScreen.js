@@ -5,9 +5,11 @@ import { UserContext } from './components/userContext';
 import { AntDesign } from '@expo/vector-icons';
 import useHealthData from '../src/hooks/useHealthData';
 import Value from '../src/components/Value';
+import { MQTTContext } from '../mqttProvider';
 //import DeviceInfo from 'react-native-device-info';
 
 function HomeScreen({ navigation }) {
+    const { client } = useContext(MQTTContext);
     const userContext = useContext(UserContext);
     const [profile, setProfile] = useState({});
     const [movements, setMovements] = useState([]);
@@ -20,7 +22,7 @@ function HomeScreen({ navigation }) {
 
     const getProfile = async () => {
         try {
-            const res = await fetch("http://172.201.117.179:3001/users/profile", { credentials: "include" });
+            const res = await fetch("http://188.230.209.59:3001/users/profile", { credentials: "include" });
             const data = await res.json();
             setProfile(data);
         } catch (error) {
@@ -53,15 +55,23 @@ function HomeScreen({ navigation }) {
     };*/
 
     const updateMovement = async () => {
-        const response = await fetch(`http://172.201.117.179:3001/users/movements/${date}`, {
+        const response = await fetch(`http://188.230.209.59:3001/users/movements/${date}`, {
             method: 'PUT',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ steps, distance, flightsClimbed: flights, calories })
         });
+
         if (response.ok) {
             const data = await response.json();
             console.log('Success:', data);
+            if (client && client.isConnected()) {
+                //console.log('Succ',userContext.user._id);
+                client.publish(`challenges/updates/${userContext.user._id}`, JSON.stringify({
+                    userId: userContext.userId,
+                    points: data.points
+                }), 0, false);
+            }
         } else {
             console.error('Failed to update movements:', response.statusText);
         }
@@ -71,7 +81,7 @@ function HomeScreen({ navigation }) {
     const handleLogout = async () => {
       try {
           // Call the logout endpoint on your server
-          const response = await fetch("http://172.201.117.179:3001/users/logout", {
+          const response = await fetch("http://188.230.209.59:3001/users/logout", {
               method: 'POST',  // or 'GET', depending on your server setup
           });
           if (response.ok) {

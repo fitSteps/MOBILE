@@ -17,7 +17,7 @@ const SubscriberScreen = () => {
   useEffect(() => {
     const getUUID = async () => {
       try {
-        const res = await fetch("http://172.201.117.179:3001/users/profile", { credentials: "include" });
+        const res = await fetch("http://188.230.209.59:3001/users/profile", { credentials: "include" });
         const data = await res.json();
         setUUID(data.phoneUUID);  // Save the UUID in state
       } catch (error) {
@@ -77,7 +77,7 @@ const SubscriberScreen = () => {
     });
 
     try {
-      const response = await fetch("http://172.201.117.179:3001/users/uploadPhoto", {
+      const response = await fetch("http://188.230.209.59:3001/users/uploadPhoto", {
         method: "POST",
         body: formData,
         headers: {
