@@ -19,7 +19,7 @@ function ProfileScreen() {
 
     const getProfile = async () => {
         try {
-            const res = await fetch("http://172.201.117.179:3001/users/profile", {
+            const res = await fetch("http://188.230.209.59:3001/users/profile", {
                 credentials: "include"
             });
             const data = await res.json();
@@ -35,7 +35,7 @@ function ProfileScreen() {
             setIsRecording(true);
             const options = {
                 quality: RNCamera.Constants.VideoQuality['480p'],
-                maxDuration: 4
+                maxDuration: 20
             };
             try {
                 const data = await cameraRef.current.recordAsync(options);
@@ -65,7 +65,7 @@ function ProfileScreen() {
         });
 
         try {
-            const response = await fetch("http://172.201.117.179:3001/users/uploadVideo", {
+            const response = await fetch("http://188.230.209.59:3001/users/uploadVideo", {
                 method: "POST",
                 body: formData,
                 headers: {
@@ -92,7 +92,7 @@ function ProfileScreen() {
         console.log('Sending UUID:', uuid);
         console.log('UUID:', uuid);
         try {
-            const response = await fetch(`http://172.201.117.179:3001/users`, {
+            const response = await fetch(`http://188.230.209.59:3001/users`, {
                 method: 'PUT',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },

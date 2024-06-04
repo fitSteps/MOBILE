@@ -31,7 +31,7 @@ const createClient = () => {
               console.log('Connection successful');
           },
           onFailure: (error) => {
-              console.error('Connection failed:', error);
+              console.error('Connection failedasd:', error);
           },
           useSSL: false,
           mqttVersion: 4,

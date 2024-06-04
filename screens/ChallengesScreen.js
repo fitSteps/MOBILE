@@ -24,7 +24,7 @@ function ChallengesScreen() {
 
     const fetchChallenges = async (signal) => {
         try {
-            const response = await fetch(`http://172.201.117.179:3001/users/challenges`, {
+            const response = await fetch(`http://188.230.209.59:3001/users/challenges`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -48,7 +48,7 @@ function ChallengesScreen() {
 
     const fetchRequests = async (signal) => {
         try {
-            const response = await fetch(`http://172.201.117.179:3001/users/challenge-requests`, {
+            const response = await fetch(`http://188.230.209.59:3001/users/challenge-requests`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ function ChallengesScreen() {
 
     const handleAccept = async (challengeId) => {
         try {
-            const response = await fetch(`http://172.201.117.179:3001/users/accept/${challengeId}`, {
+            const response = await fetch(`http://188.230.209.59:3001/users/accept/${challengeId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ function ChallengesScreen() {
     
     const handleReject = async (challengeId) => {
         try {
-            const response = await fetch(`http://172.201.117.179:3001/users/reject/${challengeId}`, {
+            const response = await fetch(`http://188.230.209.59:3001/users/reject/${challengeId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

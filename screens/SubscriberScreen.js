@@ -17,9 +17,9 @@ const SubscriberScreen = () => {
   useEffect(() => {
     const getUUID = async () => {
       try {
-        const res = await fetch("http://172.201.117.179:3001/users/profile", { credentials: "include" });
+        const res = await fetch("http://188.230.209.59:3001/users/profile", { credentials: "include" });
         const data = await res.json();
-        setUUID(data.phoneUUID);  // Save the UUID in state
+        setUUID(data.phoneUUID);
       } catch (error) {
         console.log('Fetch profile error:', error);
         Alert.alert('Error', 'Unable to fetch profile.');
@@ -31,7 +31,7 @@ const SubscriberScreen = () => {
 
   useEffect(() => {
     if (client && uuid) {
-      const topic = `topic/${uuid}`;
+      const topic = `topic/${userContext.user._id}`;
       client.onMessageArrived = (msg) => {
         console.log('Received msg:', msg.payloadString);
         setMessage(msg.payloadString);
@@ -55,7 +55,7 @@ const SubscriberScreen = () => {
   }, [client, uuid]);
 
   const handleAuthenticate = () => {
-    setCameraVisible(true); // Open the camera to take a photo
+    setCameraVisible(true);
   };
 
   const takePicture = async () => {
@@ -63,8 +63,8 @@ const SubscriberScreen = () => {
       const options = { quality: 0.5, base64: true, orientation: 'portrait' };
       const data = await cameraRef.current.takePictureAsync(options);
       console.log(data.uri);
-      setPhotoUri(data.uri); // Set the photo URI for preview
-      setCameraVisible(false); // Hide the camera
+      setPhotoUri(data.uri);
+      setCameraVisible(false);
     }
   };
 
@@ -77,7 +77,7 @@ const SubscriberScreen = () => {
     });
 
     try {
-      const response = await fetch("http://172.201.117.179:3001/users/uploadPhoto", {
+      const response = await fetch("http://188.230.209.59:3001/users/uploadPhoto", {
         method: "POST",
         body: formData,
         headers: {
@@ -88,26 +88,12 @@ const SubscriberScreen = () => {
       if (response.ok) {
         Alert.alert("Upload Successful", "Photo uploaded successfully.");
         setPhotoUri(null); // Clear the photo URI after upload
-        approveAuthenticate();
       } else {
         throw new Error('Upload failed');
       }
     } catch (error) {
       console.error("Upload Error:", error);
       Alert.alert("Upload Error", "Failed to upload photo.");
-    }
-  };
-
-  const approveAuthenticate = () => {
-    if (client && client.isConnected()) {
-      const topic = `topic/${uuid}`;  // Ensure the topic is defined based on current UUID
-      const message = 'Authenticated';  // Define the text you want to send
-      
-      client.publish(topic, message, 1, false);
-
-    } else {
-      console.log('Client is not connected.');
-      Alert.alert("Connection Error", "Cannot connect to MQTT broker.");
     }
   };
 

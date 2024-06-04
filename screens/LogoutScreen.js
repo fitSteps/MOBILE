@@ -9,7 +9,7 @@ function LogoutScreen({ navigation }) {
         const logout = async function() {
             try {
                 // Optionally handle the server-side logout
-                const res = await fetch("http://172.201.117.179:3001/users/logout");
+                const res = await fetch("http://188.230.209.59:3001/users/logout");
                 userContext.setUserContext(null);  // Assuming setUserContext sets the user state to null
                 navigation.replace('Login');
             } catch (error) {
