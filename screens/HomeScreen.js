@@ -5,9 +5,11 @@ import { UserContext } from './components/userContext';
 import { AntDesign } from '@expo/vector-icons';
 import useHealthData from '../src/hooks/useHealthData';
 import Value from '../src/components/Value';
+import { MQTTContext } from '../mqttProvider';
 //import DeviceInfo from 'react-native-device-info';
 
 function HomeScreen({ navigation }) {
+    const { client } = useContext(MQTTContext);
     const userContext = useContext(UserContext);
     const [profile, setProfile] = useState({});
     const [movements, setMovements] = useState([]);
@@ -59,9 +61,17 @@ function HomeScreen({ navigation }) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ steps, distance, flightsClimbed: flights, calories })
         });
+
         if (response.ok) {
             const data = await response.json();
             console.log('Success:', data);
+            if (client && client.isConnected()) {
+                //console.log('Succ',userContext.user._id);
+                client.publish(`challenges/updates/${userContext.user._id}`, JSON.stringify({
+                    userId: userContext.userId,
+                    points: data.points
+                }), 0, false);
+            }
         } else {
             console.error('Failed to update movements:', response.statusText);
         }

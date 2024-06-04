@@ -4,6 +4,8 @@ import { RNCamera } from 'react-native-camera';
 import Video from 'react-native-video'; // Make sure to have react-native-video installed
 import Value from '../src/components/Value';
 import DeviceInfo from 'react-native-device-info';
+import { UserContext } from './components/userContext';
+
 
 function ProfileScreen() {
     const [profile, setProfile] = useState({});

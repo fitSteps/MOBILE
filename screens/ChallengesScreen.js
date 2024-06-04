@@ -1,9 +1,13 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, StyleSheet, FlatList, Button, Alert } from 'react-native';
 import { UserContext } from './components/userContext';
+import { MQTTContext } from '../mqttProvider';
+
 
 function ChallengesScreen() {
     const { user } = useContext(UserContext);
+    const { client } = useContext(MQTTContext);
+    const userContext = useContext(UserContext);
     const [challenges, setChallenges] = useState([]);
     const [requests, setRequests] = useState([]);
 
@@ -12,7 +16,26 @@ function ChallengesScreen() {
 
         if (user) {
             fetchChallengesAndRequests(abortController.signal);
+            // Subscribe to MQTT for updates
+            if (client) {
+                const topic = `challenges/updates/${userContext.user._id}`;
+                console.log(userContext.user._id)
+                client.subscribe(topic);
+
+                client.onMessageArrived = (message) => {
+                    const updatedData = JSON.parse(message.payloadString);
+                    console.log('Received update:', updatedData);
+                    updateChallenges(updatedData);
+                };
+            }
         }
+        
+        return () => {
+            abortController.abort();
+            if (client) {
+                client.unsubscribe(`challenges/updates/${user.userId}`);
+            }
+        };
 
         return () => abortController.abort(); // Cleanup function that aborts the fetch when the component unmounts
     }, [user]);
@@ -20,6 +43,17 @@ function ChallengesScreen() {
     const fetchChallengesAndRequests = async (signal) => {
         await fetchChallenges(signal);
         await fetchRequests(signal);
+    };
+    const updateChallenges = (data) => {
+        setChallenges(currentChallenges =>
+            currentChallenges.map(challenge => {
+                if (challenge.challenger._id === data.userId || challenge.challenged._id === data.userId) {
+                    // Assume data contains new points; modify logic as needed
+                    return { ...challenge, challengerPoints: data.points, challengedPoints: data.points };
+                }
+                return challenge;
+            })
+        );
     };
 
     const fetchChallenges = async (signal) => {
@@ -118,10 +152,11 @@ function ChallengesScreen() {
     const renderChallenge = ({ item }) => (
         <View style={styles.item}>
             <Text style={styles.title}>{item.challengeName}</Text>
-            <Text>From: {item.challenger.username}</Text>
-            <Text>To: {item.challenged.username}</Text>
-            <Text>Ends: {item.dateTo}</Text>
             <Text>Goal Points: {item.goalPoints}</Text>
+            <Text>{item.challenger.username}s points: {item.challengerPoints}</Text>
+            <Text>{item.challenged.username}s points: {item.challengedPoints}</Text>
+            <Text>Started: {item.dateFrom}</Text>
+            <Text>Ends: {item.dateTo}</Text>
         </View>
     );
 
