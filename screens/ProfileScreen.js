@@ -37,6 +37,7 @@ function ProfileScreen() {
             setIsRecording(true);
             const options = {
                 quality: RNCamera.Constants.VideoQuality['480p'],
+                type: RNCamera.Constants.Type.back, 
                 maxDuration: 20
             };
             try {

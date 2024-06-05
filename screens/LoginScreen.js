@@ -20,7 +20,7 @@ function LoginScreen({ navigation }) {
             body: JSON.stringify({
                 username: username,
                 password: password,
-                phoneUUID: uuid
+                phoneUUID: uuid //{ _j: "24a1d601ca7c05b3"}
             })
         });
         const data = await res.json();

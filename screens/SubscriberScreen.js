@@ -88,12 +88,26 @@ const SubscriberScreen = () => {
       if (response.ok) {
         Alert.alert("Upload Successful", "Photo uploaded successfully.");
         setPhotoUri(null); // Clear the photo URI after upload
+        approveAuthenticate();
       } else {
         throw new Error('Upload failed');
       }
     } catch (error) {
       console.error("Upload Error:", error);
       Alert.alert("Upload Error", "Failed to upload photo.");
+    }
+  };
+
+  const approveAuthenticate = () => {
+    if (client && client.isConnected()) {
+      const topic = `topic/${userContext.user._id}`;  // Ensure the topic is defined based on current UUID
+      const message = 'Slika je bva usesno uplodana';  // Define the text you want to send
+      
+      client.publish(topic, message, 1, false);
+
+    } else {
+      console.log('Client is not connected.');
+      Alert.alert("Connection Error", "Cannot connect to MQTT broker.");
     }
   };
 
@@ -119,7 +133,7 @@ const SubscriberScreen = () => {
         <RNCamera
           ref={cameraRef}
           style={styles.preview}
-          type={RNCamera.Constants.Type.front}
+          type={RNCamera.Constants.Type.back}
           captureAudio={false}
         >
           <View style={styles.cameraControl}>
