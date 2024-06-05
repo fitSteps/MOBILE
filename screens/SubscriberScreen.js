@@ -133,7 +133,7 @@ const SubscriberScreen = () => {
         <RNCamera
           ref={cameraRef}
           style={styles.preview}
-          type={RNCamera.Constants.Type.back}
+          type={RNCamera.Constants.Type.front}
           captureAudio={false}
         >
           <View style={styles.cameraControl}>
