@@ -24,7 +24,7 @@ function ChallengesScreen() {
 
                 client.onMessageArrived = (message) => {
                     const updatedData = JSON.parse(message.payloadString);
-                    console.log('Received update:', updatedData);
+                    console.log(updatedData,);
                     updateChallenges(updatedData);
                 };
             }
@@ -44,17 +44,44 @@ function ChallengesScreen() {
         await fetchChallenges(signal);
         await fetchRequests(signal);
     };
-    const updateChallenges = (data) => {
-        setChallenges(currentChallenges =>
-            currentChallenges.map(challenge => {
-                if (challenge.challenger._id === data.userId || challenge.challenged._id === data.userId) {
-                    // Assume data contains new points; modify logic as needed
-                    return { ...challenge, challengerPoints: data.points, challengedPoints: data.points };
-                }
-                return challenge;
-            })
-        );
+    const updateChallenges = async (data) => {
+        // Assuming 'data' includes 'userId' and 'points'
+    
+        try {
+            const response = await fetch('http://188.230.209.59:3001/challenges/update-points', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    credentials: 'include'
+
+                },
+                body: JSON.stringify({
+                    userId: data.userId,
+                    points: data.points
+                })
+            });
+            const responseData = await response.json();
+            console.log(responseData.message); // Log the server's response
+    
+            if (response.ok) {
+                // Assuming the server returns the updated challenge(s) in the response
+                setChallenges(prevChallenges => prevChallenges.map(challenge => {
+                    if (challenge._id === responseData.challenge._id) {
+                        return responseData.challenge; // Replace with updated challenge from server
+                    }
+                    return challenge;
+                }));
+            } else {
+                throw new Error(responseData.message || 'Failed to update challenge points on server.');
+            }
+        } catch (error) {
+            console.error('Failed to update points on server:', error);
+            // Optionally handle error state in UI
+        }
     };
+    
+    
+    
 
     const fetchChallenges = async (signal) => {
         try {
