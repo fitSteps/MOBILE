@@ -51,11 +51,13 @@ function LoginScreen({ navigation }) {
                 onChangeText={setPassword}
                 secureTextEntry
             />
-            <Button title="Log in" onPress={handleLogin} />
+            <TouchableOpacity style={styles.button} activeOpacity={0.7} onPress={handleLogin}>
+                <Text style={styles.buttonText}>Log in</Text>
+            </TouchableOpacity>
             {error ? <Text style={styles.error}>{error}</Text> : null}
             <View style={styles.registerContainer}>
                 <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-                    <Text style={styles.registerButton}>Don't have an account yet? </Text>
+                    <Text style={styles.registerButton}>Don't have an account yet?</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -66,30 +68,56 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
+        alignItems: 'center',
         padding: 20,
+        backgroundColor: '#F8F8F8',
     },
     input: {
-        height: 40,
-        borderColor: 'gray',
+        height: 48,
+        width: '90%',
+        backgroundColor: 'white',
+        borderRadius: 10,
+        paddingHorizontal: 15,
+        fontSize: 16,
+        marginBottom: 15,
+        borderColor: '#E0E0E0',
         borderWidth: 1,
-        marginBottom: 10,
-        paddingHorizontal: 10,
+    },
+    button: {
+        backgroundColor: '#007AFF',
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 10,
+        width: '90%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    buttonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '600',
     },
     error: {
         color: 'red',
+        fontSize: 14,
         marginTop: 10,
+        width: '90%',
+        textAlign: 'center',
     },
     registerContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
         marginTop: 10,
     },
-    registerText: {
-        fontSize: 14,
-    },
     registerButton: {
         fontSize: 14,
-        color: 'blue',
+        color: '#007AFF', // Matching the button color for a consistent look
+        fontWeight: '600',
     }
 });
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, StyleSheet, FlatList, Button, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Button, Alert } from 'react-native';
 import { UserContext } from './components/userContext';
 import { MQTTContext } from '../mqttProvider';
 
@@ -180,8 +180,8 @@ function ChallengesScreen() {
         <View style={styles.item}>
             <Text style={styles.title}>{item.challengeName}</Text>
             <Text>Goal Points: {item.goalPoints}</Text>
-            <Text>{item.challenger.username}s points: {item.challengerPoints}</Text>
-            <Text>{item.challenged.username}s points: {item.challengedPoints}</Text>
+            <Text>{item.challenger.username}'s points: {item.challengerPoints}</Text>
+            <Text>{item.challenged.username}'s points: {item.challengedPoints}</Text>
             <Text>Started: {item.dateFrom}</Text>
             <Text>Ends: {item.dateTo}</Text>
         </View>
@@ -193,8 +193,12 @@ function ChallengesScreen() {
             <Text>From: {item.challenger.username}</Text>
             <Text>Goal Points: {item.goalPoints}</Text>
             <View style={styles.buttons}>
-                <Button title="Accept" onPress={() => handleAccept(item._id)} />
-                <Button title="Reject" onPress={() => handleReject(item._id)} />
+                <TouchableOpacity style={styles.button} onPress={() => handleAccept(item._id)}>
+                    <Text style={styles.buttonText}>Accept</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={() => handleReject(item._id)}>
+                    <Text style={styles.buttonText}>Reject</Text>
+                </TouchableOpacity>
             </View>
         </View>
     );
@@ -217,29 +221,52 @@ function ChallengesScreen() {
     );
 }
 
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         marginTop: 20,
-        paddingHorizontal: 10
+        paddingHorizontal: 10,
+        backgroundColor: '#f0f0f0',
     },
     item: {
-        backgroundColor: '#f9f9f9',
+        backgroundColor: '#ffffff',
+        borderRadius: 10,
         padding: 20,
-        marginVertical: 8
+        marginVertical: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
     },
     title: {
-        fontSize: 18
+        fontSize: 18,
+        fontWeight: 'bold',
     },
     header: {
         fontSize: 24,
+        fontWeight: 'bold',
         textAlign: 'center',
-        marginBottom: 20
+        marginBottom: 20,
     },
     buttons: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginTop: 10
+        marginTop: 10,
+    },
+    button: {
+        backgroundColor: '#007AFF',
+        borderRadius: 10,
+        padding: 10,
+        width: 100,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    buttonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '600',
     }
 });
 

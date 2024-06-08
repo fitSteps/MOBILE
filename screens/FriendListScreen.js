@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, StyleSheet, FlatList, Button, Modal, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Button, Modal, TextInput,Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { UserContext } from './components/userContext';
 
@@ -100,7 +100,20 @@ function Friends() {
             <Text style={styles.header}>Friends List</Text>
             <FlatList
                 data={friends}
-                renderItem={renderItem}
+                renderItem={({ item }) => (
+                    <View style={styles.item}>
+                        <Text style={styles.username}>{item.username}</Text>
+                        <Text>{item.email}</Text>
+                        {!item.isChallenged && !item.hasChallengeRequest && (
+                            <TouchableOpacity style={styles.button} onPress={() => {
+                                setSelectedFriend(item);
+                                setModalVisible(true);
+                            }}>
+                                <Text style={styles.buttonText}>Challenge</Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                )}
                 keyExtractor={(item, index) => index.toString()}
                 ListEmptyComponent={() => <Text>You have no friends.</Text>}
             />
@@ -121,8 +134,12 @@ function Friends() {
                             style={styles.input}
                             keyboardType="numeric"
                         />
-                        <Button title="Submit Challenge" onPress={handleChallengeSubmit} />
-                        <Button title="Cancel" onPress={() => setModalVisible(false)} />
+                        <TouchableOpacity style={styles.button} onPress={handleChallengeSubmit}>
+                            <Text style={styles.buttonText}>Submit Challenge</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.button} onPress={() => setModalVisible(false)}>
+                            <Text style={styles.buttonText}>Cancel</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </Modal>
@@ -134,26 +151,35 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         marginTop: 50,
-        paddingHorizontal: 10
+        paddingHorizontal: 10,
+        backgroundColor: '#f0f0f0',
     },
     header: {
         fontSize: 24,
+        fontWeight: 'bold',
         textAlign: 'center',
-        marginBottom: 20
+        marginBottom: 20,
     },
     item: {
-        backgroundColor: '#f9f9f9',
+        backgroundColor: '#ffffff',
         padding: 20,
-        marginVertical: 8
+        marginVertical: 8,
+        borderRadius: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
     },
     username: {
-        fontSize: 18
+        fontSize: 18,
+        fontWeight: 'bold',
     },
     centeredView: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 22,
+        backgroundColor: 'rgba(0,0,0,0.5)', // semi-transparent background
     },
     modalView: {
         margin: 20,
@@ -170,12 +196,27 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
     },
+    button: {
+        backgroundColor: '#007AFF',
+        borderRadius: 10,
+        padding: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 10,
+    },
+    buttonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '600',
+    },
     input: {
         width: 200,
         height: 40,
         marginBottom: 12,
         borderWidth: 1,
         padding: 10,
+        borderColor: '#ccc',
+        borderRadius: 5,
     },
 });
 
