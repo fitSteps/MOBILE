@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, Button, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import LogoutButton from './components/LogoutButton';
 import { UserContext } from './components/userContext';
 import { AntDesign } from '@expo/vector-icons';
@@ -119,7 +119,7 @@ function HomeScreen({ navigation }) {
       <>
         <View style={styles.container}>
             <Text style={styles.title}>User Movement</Text>
-
+        
             <View style={styles.datePicker}>
               <AntDesign
                 onPress={() => changeDate(-1)}
@@ -145,9 +145,6 @@ function HomeScreen({ navigation }) {
            {
            //<Button title="Update UUID" onPress={sendUUIDToServer} />
            }
-            <LogoutButton onLogout={() => {
-                navigation.replace('Logout');
-            }} />
         </View>
         </>
     );
@@ -159,10 +156,39 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
+        backgroundColor: '#f0f0f0', // Light background color
     },
     title: {
-        fontSize: 20,
+        fontSize: 22,
+        fontWeight: 'bold',
         marginBottom: 20,
+    },
+    datePicker: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    dateText: {
+        fontSize: 18,
+        marginHorizontal: 10,
+    },
+    icon: {
+        padding: 10,
+        backgroundColor: '#e0e0e0', // Icon background for better visibility
+        borderRadius: 10,
+    },
+    button: {
+        marginTop: 20,
+        backgroundColor: '#007AFF', // Bright blue for action button
+        padding: 12,
+        borderRadius: 10,
+        width: 200,
+        alignItems: 'center',
+    },
+    buttonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '600',
     }
 });
 

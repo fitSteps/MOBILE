@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
+import { View, TextInput, Button, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 function RegisterScreen({ navigation }) {
     const [username, setUsername] = useState('');
@@ -70,7 +70,9 @@ function RegisterScreen({ navigation }) {
                 onChangeText={setWeight}
                 keyboardType="numeric"
             />
-            <Button title="Register" onPress={handleRegister} />
+            <TouchableOpacity style={styles.button} activeOpacity={0.7} onPress={handleRegister}>
+                <Text style={styles.buttonText}>Register</Text>
+            </TouchableOpacity>
             {error ? <Text style={styles.error}>{error}</Text> : null}
         </View>
     );
@@ -80,19 +82,51 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F2F1F6',
         padding: 20,
     },
     input: {
-        height: 40,
-        borderColor: 'gray',
+        height: 48,
+        width: '90%',  // Full width of the screen with some margin
+        backgroundColor: 'white',
+        borderRadius: 10,
+        paddingHorizontal: 15,
+        fontSize: 16,
+        color: '#333',
+        marginBottom: 15,
         borderWidth: 1,
-        marginBottom: 10,
-        paddingHorizontal: 10,
+        borderColor: '#E0E0E0', // Very light border for depth
+    },
+    button: {
+        backgroundColor: '#007AFF', // iOS default blue
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 10,
+        shadowColor: '#000000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '90%',  // Ensuring the button is not too wide
+    },
+    buttonText: {
+        color: '#FFFFFF',  // White color for the text
+        fontSize: 16,
+        fontWeight: '600',  // Semi-bold for iOS
     },
     error: {
         color: 'red',
+        fontSize: 14,
         marginTop: 10,
+        width: '90%',
+        textAlign: 'center', // Center error messages
     }
 });
+
+
+
 
 export default RegisterScreen;

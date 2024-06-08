@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, Button, StyleSheet, Alert, Modal } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert, Modal, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { RNCamera } from 'react-native-camera';
 import Video from 'react-native-video'; // Make sure to have react-native-video installed
 import Value from '../src/components/Value';
@@ -37,7 +37,7 @@ function ProfileScreen() {
             setIsRecording(true);
             const options = {
                 quality: RNCamera.Constants.VideoQuality['480p'],
-                type: RNCamera.Constants.Type.back, 
+                type: RNCamera.Constants.Type.back,
                 maxDuration: 20
             };
             try {
@@ -115,20 +115,32 @@ function ProfileScreen() {
     };
 
     return (
-        <View style={{ flex: 1 }}>
-            <Text>Profile</Text>
-            <Value label="Username" value={profile.username} />
-            {(!profile.phoneUUID || profile.phoneUUID === "") && (
-                <Button title="Open Camera" onPress={() => setCameraVisible(true)} />
-            )}
-            {cameraVisible && (
+        <View style={styles.container}>
+            {cameraVisible ? (
                 <RNCamera
                     ref={cameraRef}
-                    style={{ flex: 1 }}
+                    style={styles.fullScreenCamera}
                     type={RNCamera.Constants.Type.front}
                 >
-                    <Button title="Record Video" onPress={recordVideo} />
+                    <View style={styles.cameraControl}>
+                        <TouchableOpacity style={styles.button} onPress={recordVideo}>
+                            <Text style={styles.buttonText}>Record Video</Text>
+                        </TouchableOpacity>
+                    </View>
                 </RNCamera>
+            ) : (
+                // Render other UI elements when camera is not active
+                <>
+                    <Value label="Username" value={profile.username} />
+                    <Value label="Email" value={profile.email} />
+                    <Value label="Created" value={profile.dateOfCreating} />
+                    <Value label="Points" value={profile.points} />
+                    {(!profile.phoneUUID || profile.phoneUUID === "") && (
+                        <TouchableOpacity style={styles.button} onPress={() => setCameraVisible(true)}>
+                            <Text style={styles.buttonText}>Open Camera</Text>
+                        </TouchableOpacity>
+                    )}
+                </>
             )}
             {previewVisible && (
                 <Modal visible={previewVisible} animationType="slide">
@@ -140,14 +152,61 @@ function ProfileScreen() {
                         resizeMode="cover"
                         shouldPlay
                         isLooping
-                        style={{ width: 300, height: 300 }}
+                        style={styles.videoPreview}
                     />
-                    <Button title="Retake" onPress={handleRetake} />
-                    <Button title="Save Video" onPress={handleSave} />
+                    <TouchableOpacity style={styles.button} onPress={handleRetake}>
+                        <Text style={styles.buttonText}>Retake</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.button} onPress={handleSave}>
+                        <Text style={styles.buttonText}>Save Video</Text>
+                    </TouchableOpacity>
                 </Modal>
             )}
         </View>
     );
 }
-
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+    },
+    fullScreenCamera: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+    },
+    cameraControl: {
+        flex: 0,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        backgroundColor: 'transparent',
+        padding: 10,
+        position: 'absolute',
+        bottom: 20,
+        width: '100%',
+    },
+    button: {
+        backgroundColor: '#007AFF',
+        borderRadius: 10,
+        padding: 15,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    buttonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    header: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        marginBottom: 20,
+    },
+    videoPreview: {
+        width: 300,
+        height: 300,
+    }
+});
 export default ProfileScreen;

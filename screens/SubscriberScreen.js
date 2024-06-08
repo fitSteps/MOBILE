@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, Button, Alert, Image } from 'react-native';
+import { View, Text, StyleSheet,TouchableOpacity, Button, Alert, Image } from 'react-native';
 import { RNCamera } from 'react-native-camera';
 import { MQTTContext } from '../mqttProvider';
 import { UserContext } from './components/userContext';
@@ -119,14 +119,13 @@ const SubscriberScreen = () => {
   return (
     <View style={styles.container}>
       {uuid !== '' && !showAuthenticateButton && !cameraVisible && !photoUri && (
-        <Text style={styles.title}>Waiting for requests</Text>
+        <Text style={styles.title}>Waiting for requests...</Text>
       )}
 
       {showAuthenticateButton && !cameraVisible && !photoUri && (
-        <Button
-          title="Authenticate"
-          onPress={handleAuthenticate}
-        />
+        <TouchableOpacity style={styles.button} onPress={handleAuthenticate}>
+          <Text style={styles.buttonText}>Authenticate</Text>
+        </TouchableOpacity>
       )}
 
       {cameraVisible && (
@@ -137,7 +136,9 @@ const SubscriberScreen = () => {
           captureAudio={false}
         >
           <View style={styles.cameraControl}>
-            <Button title="Take Photo" onPress={takePicture} />
+            <TouchableOpacity style={styles.button} onPress={takePicture}>
+              <Text style={styles.buttonText}>Take Photo</Text>
+            </TouchableOpacity>
           </View>
         </RNCamera>
       )}
@@ -145,8 +146,12 @@ const SubscriberScreen = () => {
       {photoUri && (
         <View style={styles.photoContainer}>
           <Image source={{ uri: photoUri }} style={styles.photoPreview} />
-          <Button title="Upload Photo" onPress={uploadPhoto} />
-          <Button title="Retake Photo" onPress={retakePhoto} />
+          <TouchableOpacity style={styles.button} onPress={uploadPhoto}>
+            <Text style={styles.buttonText}>Upload Photo</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={retakePhoto}>
+            <Text style={styles.buttonText}>Retake Photo</Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -159,11 +164,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    backgroundColor: '#f0f0f0', // Light background color
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: '#2c3e50', // Darker text for better visibility
+  },
+  button: {
+    backgroundColor: '#007AFF',
+    padding: 12,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
   preview: {
     flex: 1,
@@ -181,6 +201,7 @@ const styles = StyleSheet.create({
   photoContainer: {
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 20,
   },
   photoPreview: {
     width: 300,
